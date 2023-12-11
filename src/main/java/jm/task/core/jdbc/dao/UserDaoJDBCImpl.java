@@ -62,6 +62,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public void removeUserById(long id) {
         try (Connection connection = Util.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(DELETE_USER_BY_ID);
+            statement.setLong(1, id);
             statement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
