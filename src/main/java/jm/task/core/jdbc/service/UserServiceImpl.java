@@ -5,11 +5,10 @@ import jm.task.core.jdbc.dao.UserDaoHibernateImpl;
 import jm.task.core.jdbc.dao.UserDaoJDBCImpl;
 import jm.task.core.jdbc.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
-    UserDao userDao = new UserDaoJDBCImpl();
+    private UserDao userDao = new UserDaoHibernateImpl();
 
     @Override
     public void createUsersTable() {
@@ -23,7 +22,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
+
         userDao.saveUser(name, lastName, age);
+        System.out.printf("User с именем – %s добавлен в базу данных \n", name);
     }
 
     @Override

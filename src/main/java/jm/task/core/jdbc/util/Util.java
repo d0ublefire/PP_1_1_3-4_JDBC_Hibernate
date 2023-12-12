@@ -1,5 +1,10 @@
 package jm.task.core.jdbc.util;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.service.ServiceRegistry;
 import jm.task.core.jdbc.model.User;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -24,38 +29,56 @@ public class Util {
 
     private static SessionFactory factory;
 
-    static {
+    private static Connection connection = null;
+
+    public static Connection getConnection() {
+
         try {
-            factory = new Configuration().addAnnotatedClass(User.class).buildSessionFactory();
+            if (connection == null) {
+                Class.forName(DRIVER);
+                System.out.println("OK");
+                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            }
+        } catch ( ClassNotFoundException | SQLException e) {
+            System.out.println("Error in class Util");
+            e.printStackTrace();
+        }
+        return connection;
+    }
+    public static SessionFactory getSessionFactory() {if (factory == null) {
+        try {
+            Configuration configuration = new Configuration();
+
+            // Hibernate settings equivalent to hibernate.cfg.xml's properties
+            Properties settings = new Properties();
+            settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
+            settings.put(Environment.URL, "jdbc:mysql://localhost:3306/mydb");
+            settings.put(Environment.USER, "root");
+            settings.put(Environment.PASS, "ROOTgfhjkm1!");
+            settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
+
+            settings.put(Environment.SHOW_SQL, "true");
+
+            settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
+
+            settings.put(Environment.HBM2DDL_AUTO, "create-drop");
+
+            configuration.setProperties(settings);
+
+            configuration.addAnnotatedClass(User.class);
+
+            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                    .applySettings(configuration.getProperties()).build();
+
+            factory = configuration.buildSessionFactory(serviceRegistry);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    public static SessionFactory getSessionFactory() {
         return factory;
     }
 
-    public static Connection getConnection() {
-        Connection conn = null;
-        try {
-            Class.forName(DRIVER);
-            conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            System.out.println("connect is well");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("SQL exception");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.out.println("ClassNotF exception");
-        }
-        return conn;
-    }
-
-
-
-
-
-
-    // реализуйте настройку соеденения с БД
 }
+
+
+
