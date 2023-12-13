@@ -3,7 +3,7 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
-import org.hibernate.SharedSessionContract;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import java.util.ArrayList;
@@ -22,7 +22,8 @@ public class UserDaoHibernateImpl implements UserDao {
     private final String GET_ALL_USERS = "SELECT * FROM users";
 
 
-    private final Session session = Util.getSessionFactory().openSession();
+
+    private final SessionFactory sessionFactory = Util.getSessionFactory();
 
     public UserDaoHibernateImpl() {
 
@@ -31,84 +32,72 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        try {
+        try (Session session = sessionFactory.openSession()){
             Transaction transaction = session.beginTransaction();
             session.createNativeQuery(CREATE_TABLE).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
-            if (session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
+            e.printStackTrace();
         }
 
     }
 
     @Override
     public void dropUsersTable() {
-        try {
+        try (Session session = sessionFactory.openSession()){
             Transaction transaction = session.beginTransaction();
             session.createNativeQuery(DROP_TABLE).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
-            if (session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
+            e.printStackTrace();
         }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        try {
+        try (Session session = sessionFactory.openSession()){
             User user = new User(name, lastName, age);
             session.beginTransaction();
             session.save(user);
             session.getTransaction().commit();
         } catch (Exception e) {
-            if (session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
+            e.printStackTrace();
         }
     }
 
     @Override
     public void removeUserById(long id) {
-        try {
+        try (Session session = sessionFactory.openSession()){
             Transaction transaction = session.beginTransaction();
             User user = session.get(User.class, id);
             session.delete(user);
             transaction.commit();
         } catch (Exception e) {
-            if (session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
+            e.printStackTrace();
         }
     }
 
     @Override
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        try {
+        try (Session session = sessionFactory.openSession()){
             session.beginTransaction();
             users = session.createNativeQuery(GET_ALL_USERS, User.class).getResultList();
             session.getTransaction().commit();
         } catch (Exception e) {
-            if (session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
+            e.printStackTrace();
         }
         return users;
     }
 
     @Override
     public void cleanUsersTable() {
-        try {
+        try (Session session = sessionFactory.openSession()){
             Transaction transaction = session.beginTransaction();
             session.createNativeQuery(CLEAN_TABLE).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
-            if (session.getTransaction().isActive()) {
-                session.getTransaction().rollback();
-            }
+            e.printStackTrace();
         }
     }
 }
